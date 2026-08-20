@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdFactory — Unit Economics Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4F3F0;
+  --surface: #FFFFFF;
+  --surface2: #FAFAF8;
+  --border: #E8E6E1;
+  --border2: #D4D1C9;
+  --text: #1A1816;
+  --text2: #5C5954;
+  --text3: #8C8880;
+  --accent: #2563EB;
+  --green: #059669;
+  --green-bg: #ECFDF5;
+  --green-border: #A7F3D0;
+  --red: #DC2626;
+  --red-bg: #FEF2F2;
+  --red-border: #FECACA;
+  --amber: #D97706;
+  --amber-bg: #FFFBEB;
+  --amber-border: #FDE68A;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --display: 'Bricolage Grotesque', sans-serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  font-family: var(--sans);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 32px 20px 80px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 920px; margin: 0 auto; }
+
+.header {
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.header-left h1 {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.header-left p {
+  font-size: 13px;
+  color: var(--text2);
+  max-width: 560px;
+  line-height: 1.6;
+}
+.lang-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.lang-btn {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 5px;
+  color: var(--text3);
+  font-family: var(--sans);
+  transition: all 0.15s;
+}
+.lang-btn.active { background: var(--text); color: #fff; }
+
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+}
+.section-title {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text3);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+.field { margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+.field-value {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+input[type=range] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border2);
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: transform 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+input[type=number] {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.15s;
+}
+input[type=number]:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.field-num label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text3);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+}
+.kpi-card.good::after { background: linear-gradient(90deg, #10B981, #34D399); }
+.kpi-card.warning::after { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+.kpi-card.bad::after { background: linear-gradient(90deg, #EF4444, #F87171); }
+.kpi-card.neutral::after { background: var(--border2); }
+.kpi-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.kpi-sub {
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.forecast-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.forecast-card.highlight { background: var(--green-bg); border-color: var(--green-border); }
+.forecast-card.warning { background: var(--amber-bg); border-color: var(--amber-border); }
+.forecast-card.danger { background: var(--red-bg); border-color: var(--red-border); }
+.forecast-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.forecast-value {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+}
+.forecast-value.green { color: var(--green); }
+.forecast-value.red { color: var(--red); }
+.forecast-sub {
+  font-size: 10px;
+  color: var(--text2);
+  margin-top: 3px;
+}
+
+/* Tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.data-table th {
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 9px 10px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.data-table th:not(:first-child) { text-align: right; }
+.data-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.data-table td:not(:first-child) { text-align: right; }
+.data-table td:first-child {
+  font-family: var(--sans);
+  font-weight: 600;
+  color: var(--text2);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--surface2); }
+.data-table .positive { color: var(--green); }
+.data-table .negative { color: var(--red); }
+
+/* Sensitivity */
+.sens-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.sens-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+.sens-matrix {
+  display: grid;
+  gap: 2px;
+  font-size: 10px;
+}
+.sens-cell {
+  padding: 5px 4px;
+  text-align: center;
+  background: var(--surface2);
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sens-cell.header {
+  background: transparent;
+  color: var(--text3);
+  font-size: 9px;
+  font-weight: 700;
+}
+.sens-cell.row-header {
+  background: transparent;
+  color: var(--text3);
+  font-size: 9px;
+  font-weight: 700;
+  text-align: right;
+  padding-right: 6px;
+}
+.sens-cell.good { background: var(--green-bg); color: var(--green); }
+.sens-cell.ok { background: #F0FDF4; color: #16A34A; }
+.sens-cell.warn { background: var(--amber-bg); color: var(--amber); }
+.sens-cell.bad { background: var(--red-bg); color: var(--red); }
+.sens-cell.current {
+  outline: 2px solid var(--text);
+  outline-offset: -1px;
+  font-weight: 800;
+}
+
+/* Plan grid */
+.plan-grid {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr;
+  gap: 6px 10px;
+  align-items: center;
+}
+.plan-header-cell {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 0;
+}
+.plan-name {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--display);
+  padding-bottom: 6px;
+}
+.plan-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  padding-right: 10px;
+  white-space: nowrap;
+}
+.plan-computed-label { color: var(--text3); }
+.plan-input-cell {}
+.plan-input-cell input[type=number] {
+  text-align: center;
+  padding: 8px 6px;
+  font-size: 13px;
+}
+.plan-computed {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 6px 0;
+  background: var(--surface2);
+  border-radius: 6px;
+}
+
+/* Cohort table highlight */
+.cohort-highlight { background: var(--green-bg) !important; }
+.cohort-highlight td:first-child { color: var(--green) !important; }
+
+/* Verdict */
+.verdict {
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-top: 10px;
+  box-shadow: var(--shadow);
+}
+.verdict.green { background: var(--green-bg); border: 2px solid var(--green-border); }
+.verdict.yellow { background: var(--amber-bg); border: 2px solid var(--amber-border); }
+.verdict.red { background: var(--red-bg); border: 2px solid var(--red-border); }
+.verdict-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.verdict-icon { font-size: 28px; line-height: 1; }
+.verdict-title-wrap {}
+.verdict-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text3);
+  margin-bottom: 2px;
+}
+.verdict-title {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 800;
+}
+.verdict.green .verdict-title { color: var(--green); }
+.verdict.yellow .verdict-title { color: var(--amber); }
+.verdict.red .verdict-title { color: var(--red); }
+.verdict-items {
+  display: grid;
+  gap: 6px;
+}
+.verdict-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.verdict-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.verdict-dot.g { background: var(--green); }
+.verdict-dot.y { background: var(--amber); }
+.verdict-dot.r { background: var(--red); }
+.verdict-score {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+.verdict-score-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.verdict-score-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.verdict-score-fill.g { background: var(--green); }
+.verdict-score-fill.y { background: var(--amber); }
+.verdict-score-fill.r { background: var(--red); }
+.verdict-score-label {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 45px;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
+  .header { flex-direction: column; gap: 14px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-grid .kpi-card:last-child { grid-column: span 2; }
+  .forecast-grid { grid-template-columns: repeat(2, 1fr); }
+  .sens-container { grid-template-columns: 1fr; }
+  .plan-grid { font-size: 12px; gap: 4px 6px; }
+  .plan-input-cell input[type=number] { font-size: 12px; padding: 6px 4px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <h1 id="h-title">AdFactory — Unit Economics</h1>
+    <p id="h-desc">Калькулятор юнит-экономики. Меняйте параметры — результаты пересчитываются мгновенно.</p>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <button class="lang-btn active" onclick="setLang('ru')">RU</button>
+  </div>
+</div>
+
+<!-- ===== INPUTS ===== -->
+
+<!-- Plan Prices -->
+<div class="section">
+  <div class="section-title"><span id="t-plans">ТАРИФНЫЕ ПЛАНЫ</span></div>
+  <div class="plan-grid">
+    <!-- Header row -->
+    <div class="plan-header-cell"></div>
+    <div class="plan-header-cell plan-name">Launch</div>
+    <div class="plan-header-cell plan-name">Scale</div>
+    <div class="plan-header-cell plan-name">Dominate</div>
+    <!-- Monthly price row -->
+    <div class="plan-label" id="pl-monthly">Месяц, $</div>
+    <div class="plan-input-cell"><input type="number" id="price-launch" value="99" min="1" max="999" step="1" oninput="calc()"></div>
+    <div class="plan-input-cell"><input type="number" id="price-scale" value="249" min="1" max="999" step="1" oninput="calc()"></div>
+    <div class="plan-input-cell"><input type="number" id="price-dominate" value="499" min="1" max="9999" step="1" oninput="calc()"></div>
+    <!-- Annual discount row -->
+    <div class="plan-label" id="pl-disc">Скидка год, %</div>
+    <div class="plan-input-cell"><input type="number" id="disc-launch" value="10" min="0" max="50" step="1" oninput="calc()"></div>
+    <div class="plan-input-cell"><input type="number" id="disc-scale" value="15" min="0" max="50" step="1" oninput="calc()"></div>
+    <div class="plan-input-cell"><input type="number" id="disc-dominate" value="20" min="0" max="50" step="1" oninput="calc()"></div>
+    <!-- Computed: Annual price per month -->
+    <div class="plan-label plan-computed-label" id="pl-annual-mo">Год/мес</div>
+    <div class="plan-computed" id="ann-mo-l">$89</div>
+    <div class="plan-computed" id="ann-mo-s">$212</div>
+    <div class="plan-computed" id="ann-mo-d">$399</div>
+    <!-- Computed: Annual total -->
+    <div class="plan-label plan-computed-label" id="pl-annual-total">Год итого</div>
+    <div class="plan-computed" id="ann-tot-l">$1,068</div>
+    <div class="plan-computed" id="ann-tot-s">$2,544</div>
+    <div class="plan-computed" id="ann-tot-d">$4,788</div>
+    <!-- Credits row -->
+    <div class="plan-label" id="pl-credits">Кредиты</div>
+    <div class="plan-input-cell"><input type="number" id="cred-launch" value="10000" min="100" max="999999" step="100" oninput="calc()"></div>
+    <div class="plan-input-cell"><input type="number" id="cred-scale" value="25000" min="100" max="999999" step="100" oninput="calc()"></div>
+    <div class="plan-input-cell"><input type="number" id="cred-dominate" value="50000" min="100" max="999999" step="100" oninput="calc()"></div>
+  </div>
+</div>
+
+<!-- Mix & Distribution -->
+<div class="section">
+  <div class="section-title"><span id="t-mix">МИКС И РАСПРЕДЕЛЕНИЕ</span></div>
+  <div class="grid3">
+    <div class="field">
+      <div class="field-label">
+        <span id="l-mix-l">Launch %</span>
+        <span class="field-value" id="val-mix-l">50%</span>
+      </div>
+      <input type="range" id="mix-launch" min="0" max="100" value="50" oninput="onMixChange('launch')">
+    </div>
+    <div class="field">
+      <div class="field-label">
+        <span id="l-mix-s">Scale %</span>
+        <span class="field-value" id="val-mix-s">35%</span>
+      </div>
+      <input type="range" id="mix-scale" min="0" max="100" value="35" oninput="onMixChange('scale')">
+    </div>
+    <div class="field">
+      <div class="field-label">
+        <span id="l-mix-d">Dominate %</span>
+        <span class="field-value" id="val-mix-d">15%</span>
+      </div>
+      <input type="range" id="mix-dominate" min="0" max="100" value="15" disabled style="opacity:0.5;">
+    </div>
+  </div>
+  <div class="grid2" style="margin-top: 10px;">
+    <div class="field">
+      <div class="field-label">
+        <span id="l-billing">Monthly / Annual</span>
+        <span class="field-value" id="val-billing">70% / 30%</span>
+      </div>
+      <input type="range" id="billing-monthly" min="0" max="100" value="70" oninput="onBillingChange()">
+    </div>
+    <div class="field">
+      <div class="field-label">
+        <span id="l-addon">Add-on revenue / user ($/мес)</span>
+        <span class="field-value" id="val-addon">$27</span>
+      </div>
+      <input type="range" id="addon-rev" min="0" max="100" value="27" step="1" oninput="onAddonChange()">
+    </div>
+  </div>
+  <div class="grid2" style="margin-top: 10px;">
+    <div class="field">
+      <div class="field-label">
+        <span id="l-addon-margin">Add-on маржа</span>
+        <span class="field-value" id="val-addon-margin">40%</span>
+      </div>
+      <input type="range" id="addon-margin" min="10" max="90" value="40" step="1" oninput="onAddonMarginChange()">
+    </div>
+    <div style="font-size:10px;color:var(--text3);align-self:center;line-height:1.4;" id="addon-margin-hint">Включает места, spy add-ons, top-ups. 40% = blended средняя.</div>
+  </div>
+</div>
+
+<!-- Unit Economics Params -->
+<div class="section">
+  <div class="section-title"><span id="t-params">ПАРАМЕТРЫ МОДЕЛИ</span></div>
+  <div class="grid2">
+    <div class="field">
+      <div class="field-label">
+        <span id="l-util">Утилизация кредитов</span>
+        <span class="field-value" id="val-util">85%</span>
+      </div>
+      <input type="range" id="utilization" min="50" max="100" value="85" oninput="onUtilChange()">
+    </div>
+    <div class="field">
+      <div class="field-label">
+        <span id="l-churn">Ежемесячный churn</span>
+        <span class="field-value" id="val-churn">10%</span>
+      </div>
+      <input type="range" id="churn" min="3" max="25" value="10" oninput="onChurnChange()">
+    </div>
+  </div>
+  <div class="grid3" style="margin-top: 10px;">
+    <div class="field-num">
+      <label id="l-new-users">Новых юзеров / мес</label>
+      <input type="number" id="new-users" value="80" min="1" max="10000" step="1" oninput="calc()">
+    </div>
+    <div class="field-num">
+      <label id="l-fixed">Fixed costs ($/мес)</label>
+      <input type="number" id="fixed-costs" value="30000" min="0" max="999999" step="1000" oninput="calc()">
+    </div>
+    <div class="field-num">
+      <label id="l-cogs-mult">COGS множитель</label>
+      <input type="number" id="cogs-mult" value="2" min="1" max="5" step="0.1" oninput="calc()">
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULTS ===== -->
+
+<div class="results-header">
+  <span style="width: 20px; height: 1px; background: var(--border2);"></span>
+  <span id="t-results">РЕЗУЛЬТАТЫ</span>
+  <span style="flex: 1; height: 1px; background: var(--border2);"></span>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid" id="kpi-grid"></div>
+
+<!-- Plan Margins Table -->
+<div class="section">
+  <div class="section-title"><span id="t-margins">МАРЖИНАЛЬНОСТЬ ПО ПЛАНАМ</span></div>
+  <div style="overflow-x: auto;">
+    <table class="data-table" id="margins-table"></table>
+  </div>
+</div>
+
+<!-- Growth Forecast -->
+<div class="section">
+  <div class="section-title"><span id="t-growth">ПРОГНОЗ РОСТА</span></div>
+  <div class="forecast-grid" id="growth-cards"></div>
+</div>
+
+<!-- Cohort Projections -->
+<div class="section">
+  <div class="section-title"><span id="t-cohorts">КОГОРТНЫЕ ПРОЕКЦИИ</span></div>
+  <div style="overflow-x: auto;">
+    <table class="data-table" id="cohort-table"></table>
+  </div>
+</div>
+
+<!-- LTV / CAC Sensitivity -->
+<div class="section">
+  <div class="section-title"><span id="t-ltv">LTV / CAC (ЧУВСТВИТЕЛЬНОСТЬ К ЧАРНУ)</span></div>
+  <div style="overflow-x: auto;">
+    <table class="data-table" id="ltv-table"></table>
+  </div>
+</div>
+
+<!-- Sensitivity Matrices -->
+<div class="section">
+  <div class="section-title"><span id="t-sens">МАТРИЦЫ ЧУВСТВИТЕЛЬНОСТИ</span></div>
+  <div class="sens-container" id="sens-container"></div>
+</div>
+
+<!-- Top-Up Bundles -->
+<div class="section">
+  <div class="section-title"><span id="t-topup">TOP-UP БАНДЛЫ</span></div>
+  <div style="overflow-x: auto;">
+    <table class="data-table" id="topup-table"></table>
+  </div>
+</div>
+
+<!-- P&L -->
+<div class="section">
+  <div class="section-title"><span id="t-pnl">P&L ПРОГНОЗ</span></div>
+  <div style="overflow-x: auto;">
+    <table class="data-table" id="pnl-table"></table>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div id="verdict-block"></div>
+
+</div><!-- /container -->
+
+<script>
+// ===== LANGUAGE =====
+let lang = 'ru';
+const T = {
+  ru: {
+    title: 'AdFactory — Unit Economics',
+    desc: 'Калькулятор юнит-экономики. Меняйте параметры — результаты пересчитываются мгновенно.',
+    plans: 'ТАРИФНЫЕ ПЛАНЫ', mix: 'МИКС И РАСПРЕДЕЛЕНИЕ', params: 'ПАРАМЕТРЫ МОДЕЛИ',
+    results: 'РЕЗУЛЬТАТЫ', margins: 'МАРЖИНАЛЬНОСТЬ ПО ПЛАНАМ', growth: 'ПРОГНОЗ РОСТА',
+    cohorts: 'КОГОРТНЫЕ ПРОЕКЦИИ', ltv: 'LTV / CAC (ЧУВСТВИТЕЛЬНОСТЬ К ЧАРНУ)',
+    sens: 'МАТРИЦЫ ЧУВСТВИТЕЛЬНОСТИ', topup: 'TOP-UP БАНДЛЫ',
+    plMonthly: 'Месяц, $', plDisc: 'Скидка год, %', plAnnualMo: 'Год/мес', plAnnualTotal: 'Год итого', plCredits: 'Кредиты',
+    mixL: 'Launch %', mixS: 'Scale %', mixD: 'Dominate %',
+    billing: 'Monthly / Annual', addon: 'Add-on выручка / юзер ($/мес)',
+    addonMargin: 'Add-on маржа', addonHint: 'Включает места, spy add-ons, top-ups. 40% = blended средняя.',
+    util: 'Утилизация кредитов', churn: 'Ежемесячный churn',
+    newUsers: 'Новых юзеров / мес', fixed: 'Fixed costs ($/мес)', cogsMult: 'COGS множитель',
+    arpu: 'ARPU', gm: 'Gross Margin', contrib: 'Contribution', payback: 'CAC Payback', maxCac: 'Max CAC',
+    perMonth: '/мес', months: 'мес',
+    plan: 'План', revenue: 'Выручка', cogs: 'COGS', marginD: 'Маржа $', marginP: 'Маржа %',
+    monthly: 'Месячный', annual: 'Годовой',
+    beMonth: 'Break-even мес', beUsers: 'BE юзеров', mrr100k: '$100K MRR мес', mktBudget: 'Маркетинг бюджет',
+    month: 'Месяц', active: 'Активных', mrr: 'MRR', arr: 'ARR',
+    churnRate: 'Чарн/мес', retention: 'Retention/год', lifetime: 'Lifetime', ltvGp: 'LTV (GP)', maxCacCol: 'Max CAC (3:1)',
+    churnVsNew: 'Чарн x Новые юзеры = BE месяц', utilVsBill: 'Утилизация x Annual % = GM%',
+    bundle: 'Бандл', bonus: 'Бонус', total: 'Итого кредитов', price: 'Цена', per100: 'За 100 кр', margin: 'Маржа',
+    steadyState: 'Steady state',
+    atChurn: 'при чарне', atUtil: 'при утил.',
+    pnl: 'P&L ПРОГНОЗ',
+    pnlPeriod: 'Период', pnlUsers: 'Юзеров', pnlRevenue: 'Выручка',
+    pnlCogs: 'COGS', pnlGross: 'Gross Profit', pnlFixed: 'Fixed Costs',
+    pnlMkt: 'Маркетинг', pnlNet: 'Net Profit',
+    verdict: 'ОЦЕНКА МОДЕЛИ',
+    verdictGreenTitle: 'Экономика сходится',
+    verdictYellowTitle: 'Есть риски',
+    verdictRedTitle: 'Экономика не сходится',
+    vGmGood: 'GM в рамках бенчмарка AI-Native SaaS (45-60%)',
+    vGmWarn: 'GM ниже бенчмарка (45%), но в допустимой зоне',
+    vGmBad: 'GM критически низкая, модель генерирует слишком мало маржи',
+    vPaybackGood: 'CAC payback быстрый, юзер прибылен с 4-го месяца',
+    vPaybackWarn: 'CAC payback умеренный, юзер прибылен через полгода+',
+    vPaybackBad: 'CAC payback слишком долгий, высокий риск не окупить привлечение',
+    vBeGood: 'Break-even за 6 месяцев или раньше',
+    vBeWarn: 'Break-even за 7-12 месяцев, приемлемо но медленно',
+    vBeBad: 'Break-even дольше 12 месяцев, нужно больше юзеров или ниже fixed costs',
+    vLtvGood: 'LTV:CAC > 3:1, юнит-экономика здоровая',
+    vLtvWarn: 'LTV:CAC около 3:1, на грани',
+    vLtvBad: 'LTV:CAC < 3:1, привлечение убыточно',
+    vMrr100Good: '$100K MRR достижим за 12 месяцев',
+    vMrr100Warn: '$100K MRR за 12-18 месяцев, медленно',
+    vMrr100Bad: '$100K MRR не достигается за 18 месяцев'
+  },
+  en: {
+    title: 'AdFactory — Unit Economics',
+    desc: 'Unit economics calculator. Change parameters — results update instantly.',
+    plans: 'PRICING PLANS', mix: 'MIX & DISTRIBUTION', params: 'MODEL PARAMETERS',
+    results: 'RESULTS', margins: 'PLAN MARGINS', growth: 'GROWTH FORECAST',
+    cohorts: 'COHORT PROJECTIONS', ltv: 'LTV / CAC (CHURN SENSITIVITY)',
+    sens: 'SENSITIVITY MATRICES', topup: 'TOP-UP BUNDLES',
+    plMonthly: 'Monthly, $', plDisc: 'Annual disc, %', plAnnualMo: 'Annual/mo', plAnnualTotal: 'Annual total', plCredits: 'Credits',
+    mixL: 'Launch %', mixS: 'Scale %', mixD: 'Dominate %',
+    billing: 'Monthly / Annual', addon: 'Add-on revenue / user ($/mo)',
+    addonMargin: 'Add-on margin', addonHint: 'Includes seats, spy add-ons, top-ups. 40% = blended average.',
+    util: 'Credit utilization', churn: 'Monthly churn',
+    newUsers: 'New users / month', fixed: 'Fixed costs ($/mo)', cogsMult: 'COGS multiplier',
+    arpu: 'ARPU', gm: 'Gross Margin', contrib: 'Contribution', payback: 'CAC Payback', maxCac: 'Max CAC',
+    perMonth: '/mo', months: 'mo',
+    plan: 'Plan', revenue: 'Revenue', cogs: 'COGS', marginD: 'Margin $', marginP: 'Margin %',
+    monthly: 'Monthly', annual: 'Annual',
+    beMonth: 'Break-even mo', beUsers: 'BE users', mrr100k: '$100K MRR mo', mktBudget: 'Marketing budget',
+    month: 'Month', active: 'Active', mrr: 'MRR', arr: 'ARR',
+    churnRate: 'Churn/mo', retention: 'Retention/yr', lifetime: 'Lifetime', ltvGp: 'LTV (GP)', maxCacCol: 'Max CAC (3:1)',
+    churnVsNew: 'Churn x New Users = BE month', utilVsBill: 'Utilization x Annual % = GM%',
+    bundle: 'Bundle', bonus: 'Bonus', total: 'Total credits', price: 'Price', per100: 'Per 100 cr', margin: 'Margin',
+    steadyState: 'Steady state',
+    atChurn: 'at churn', atUtil: 'at util.',
+    pnl: 'P&L FORECAST',
+    pnlPeriod: 'Period', pnlUsers: 'Users', pnlRevenue: 'Revenue',
+    pnlCogs: 'COGS', pnlGross: 'Gross Profit', pnlFixed: 'Fixed Costs',
+    pnlMkt: 'Marketing', pnlNet: 'Net Profit',
+    verdict: 'MODEL ASSESSMENT',
+    verdictGreenTitle: 'Economics work',
+    verdictYellowTitle: 'Some risks',
+    verdictRedTitle: 'Economics don\'t work',
+    vGmGood: 'GM within AI-Native SaaS benchmark (45-60%)',
+    vGmWarn: 'GM below benchmark (45%) but in acceptable range',
+    vGmBad: 'GM critically low, model generates too little margin',
+    vPaybackGood: 'Fast CAC payback, user profitable from month 4',
+    vPaybackWarn: 'Moderate CAC payback, user profitable after 6+ months',
+    vPaybackBad: 'CAC payback too long, high risk of not recouping acquisition cost',
+    vBeGood: 'Break-even within 6 months',
+    vBeWarn: 'Break-even in 7-12 months, acceptable but slow',
+    vBeBad: 'Break-even over 12 months, need more users or lower fixed costs',
+    vLtvGood: 'LTV:CAC > 3:1, healthy unit economics',
+    vLtvWarn: 'LTV:CAC around 3:1, borderline',
+    vLtvBad: 'LTV:CAC < 3:1, acquisition is unprofitable',
+    vMrr100Good: '$100K MRR achievable within 12 months',
+    vMrr100Warn: '$100K MRR in 12-18 months, slow',
+    vMrr100Bad: '$100K MRR not reached within 18 months'
+  }
+};
+
+function t(key) { return T[lang][key] || key; }
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === l.toUpperCase()));
+  // Update labels
+  document.getElementById('h-title').textContent = t('title');
+  document.getElementById('h-desc').textContent = t('desc');
+  document.getElementById('t-plans').textContent = t('plans');
+  document.getElementById('t-mix').textContent = t('mix');
+  document.getElementById('t-params').textContent = t('params');
+  document.getElementById('t-results').textContent = t('results');
+  document.getElementById('t-margins').textContent = t('margins');
+  document.getElementById('t-growth').textContent = t('growth');
+  document.getElementById('t-cohorts').textContent = t('cohorts');
+  document.getElementById('t-ltv').textContent = t('ltv');
+  document.getElementById('t-sens').textContent = t('sens');
+  document.getElementById('t-topup').textContent = t('topup');
+  document.getElementById('t-pnl').textContent = t('pnl');
+  document.getElementById('pl-monthly').textContent = t('plMonthly');
+  document.getElementById('pl-disc').textContent = t('plDisc');
+  document.getElementById('pl-annual-mo').textContent = t('plAnnualMo');
+  document.getElementById('pl-annual-total').textContent = t('plAnnualTotal');
+  document.getElementById('pl-credits').textContent = t('plCredits');
+  document.getElementById('l-mix-l').textContent = t('mixL');
+  document.getElementById('l-mix-s').textContent = t('mixS');
+  document.getElementById('l-mix-d').textContent = t('mixD');
+  document.getElementById('l-billing').textContent = t('billing');
+  document.getElementById('l-addon').textContent = t('addon');
+  document.getElementById('l-addon-margin').textContent = t('addonMargin');
+  document.getElementById('addon-margin-hint').textContent = t('addonHint');
+  document.getElementById('l-util').textContent = t('util');
+  document.getElementById('l-churn').textContent = t('churn');
+  document.getElementById('l-new-users').textContent = t('newUsers');
+  document.getElementById('l-fixed').textContent = t('fixed');
+  document.getElementById('l-cogs-mult').textContent = t('cogsMult');
+  calc();
+}
+
+// ===== INPUT HANDLERS =====
+function onMixChange(changed) {
+  const lv = +document.getElementById('mix-launch').value;
+  const sv = +document.getElementById('mix-scale').value;
+  if (changed === 'launch') {
+    const remaining = 100 - lv;
+    const sv2 = Math.min(sv, remaining);
+    document.getElementById('mix-scale').value = sv2;
+    document.getElementById('mix-scale').max = remaining;
+  } else {
+    const remaining = 100 - sv;
+    const lv2 = Math.min(lv, remaining);
+    document.getElementById('mix-launch').value = lv2;
+    document.getElementById('mix-launch').max = remaining;
+  }
+  const l = +document.getElementById('mix-launch').value;
+  const s = +document.getElementById('mix-scale').value;
+  const d = Math.max(0, 100 - l - s);
+  document.getElementById('mix-dominate').value = d;
+  document.getElementById('val-mix-l').textContent = l + '%';
+  document.getElementById('val-mix-s').textContent = s + '%';
+  document.getElementById('val-mix-d').textContent = d + '%';
+  calc();
+}
+
+function onBillingChange() {
+  const m = +document.getElementById('billing-monthly').value;
+  const a = 100 - m;
+  document.getElementById('val-billing').textContent = m + '% / ' + a + '%';
+  calc();
+}
+
+function onAddonChange() {
+  const v = +document.getElementById('addon-rev').value;
+  document.getElementById('val-addon').textContent = '$' + v;
+  calc();
+}
+
+function onAddonMarginChange() {
+  const v = +document.getElementById('addon-margin').value;
+  document.getElementById('val-addon-margin').textContent = v + '%';
+  calc();
+}
+
+function onUtilChange() {
+  const v = +document.getElementById('utilization').value;
+  document.getElementById('val-util').textContent = v + '%';
+  calc();
+}
+
+function onChurnChange() {
+  const v = +document.getElementById('churn').value;
+  document.getElementById('val-churn').textContent = v + '%';
+  calc();
+}
+
+// ===== FORMATTING =====
+function fmtD(v) { return '$' + Math.round(v).toLocaleString('en-US'); }
+function fmtD1(v) { return '$' + v.toFixed(1); }
+function fmtP(v) { return v.toFixed(1) + '%'; }
+function fmtK(v) { return v >= 1000 ? '$' + (v/1000).toFixed(0) + 'K' : fmtD(v); }
+function fmtKd(v) { return v >= 1000000 ? '$' + (v/1000000).toFixed(2) + 'M' : v >= 1000 ? '$' + (v/1000).toFixed(0) + 'K' : fmtD(v); }
+
+// ===== CORE CALCULATION =====
+function calc() {
+  // Read inputs
+  const prices = [+document.getElementById('price-launch').value, +document.getElementById('price-scale').value, +document.getElementById('price-dominate').value];
+  const discounts = [+document.getElementById('disc-launch').value/100, +document.getElementById('disc-scale').value/100, +document.getElementById('disc-dominate').value/100];
+  const credits = [+document.getElementById('cred-launch').value, +document.getElementById('cred-scale').value, +document.getElementById('cred-dominate').value];
+  const mixL = +document.getElementById('mix-launch').value/100;
+  const mixS = +document.getElementById('mix-scale').value/100;
+  const mixD = Math.max(0, 1 - mixL - mixS);
+  const mix = [mixL, mixS, mixD];
+  const billingMonthly = +document.getElementById('billing-monthly').value/100;
+  const billingAnnual = 1 - billingMonthly;
+  const addonRev = +document.getElementById('addon-rev').value;
+  const addonMarginPct = +document.getElementById('addon-margin').value/100;
+  const util = +document.getElementById('utilization').value/100;
+  const churn = +document.getElementById('churn').value/100;
+  const newUsers = +document.getElementById('new-users').value;
+  const fixedCosts = +document.getElementById('fixed-costs').value;
+  const cogsMult = +document.getElementById('cogs-mult').value;
+
+  // Credit cost per unit
+  const creditCost = 0.01 / cogsMult; // $0.005 at 2x
+
+  // Update computed plan cells
+  const annIds = [['ann-mo-l','ann-tot-l'],['ann-mo-s','ann-tot-s'],['ann-mo-d','ann-tot-d']];
+  for (let i = 0; i < 3; i++) {
+    const annMo = prices[i] * (1 - discounts[i]);
+    const annTotal = annMo * 12;
+    document.getElementById(annIds[i][0]).textContent = '$' + Math.round(annMo).toLocaleString('en-US');
+    document.getElementById(annIds[i][1]).textContent = '$' + Math.round(annTotal).toLocaleString('en-US');
+  }
+
+  // Plan overhead (non-credit COGS: infra, support, integrations)
+  const overheadMonthly = [11.50, 15.75, 21.50];
+  const overheadAnnualPremium = [3, 4, 6];
+
+  // Per-plan COGS and margins
+  const planData = [];
+  for (let i = 0; i < 3; i++) {
+    const creditCogs = credits[i] * creditCost * util;
+    // Monthly
+    const cogsM = creditCogs + overheadMonthly[i];
+    const revM = prices[i];
+    const marginM = revM - cogsM;
+    const marginPctM = marginM / revM * 100;
+    // Annual
+    const revA = prices[i] * (1 - discounts[i]);
+    const cogsA = creditCogs + overheadMonthly[i] + overheadAnnualPremium[i];
+    const marginA = revA - cogsA;
+    const marginPctA = marginA / revA * 100;
+    planData.push({ revM, cogsM, marginM, marginPctM, revA, cogsA, marginA, marginPctA });
+  }
+
+  // ARPU calculation
+  let arpu = 0;
+  for (let i = 0; i < 3; i++) {
+    const planRevenue = billingMonthly * prices[i] + billingAnnual * prices[i] * (1 - discounts[i]);
+    arpu += mix[i] * planRevenue;
+  }
+  arpu += addonRev;
+
+  // Blended COGS per user
+  let blendedCogs = 0;
+  for (let i = 0; i < 3; i++) {
+    const planCogs = billingMonthly * planData[i].cogsM + billingAnnual * planData[i].cogsA;
+    blendedCogs += mix[i] * planCogs;
+  }
+  // Addon COGS (seats, spy, top-ups)
+  const addonCogs = addonRev * (1 - addonMarginPct);
+  blendedCogs += addonCogs;
+
+  const grossMargin = (arpu - blendedCogs) / arpu;
+  const contribution = arpu * grossMargin;
+  const lifetime = 1 / churn;
+  const ltvGP = contribution * lifetime;
+  const maxCAC = ltvGP / 3;
+  const cacPayback = lifetime / 3;
+
+  // Break-even
+  const beUsers = Math.ceil(fixedCosts / contribution);
+  let beMonth = null;
+  for (let n = 1; n <= 60; n++) {
+    const activeUsers = newUsers * (1 - Math.pow(1 - churn, n)) / churn;
+    if (activeUsers * contribution >= fixedCosts) { beMonth = n; break; }
+  }
+
+  // $100K MRR month
+  let mrr100kMonth = null;
+  for (let n = 1; n <= 60; n++) {
+    const activeUsers = newUsers * (1 - Math.pow(1 - churn, n)) / churn;
+    if (activeUsers * arpu >= 100000) { mrr100kMonth = n; break; }
+  }
+
+  // Marketing budget
+  const mktBudget = newUsers * maxCAC;
+
+  // ===== RENDER KPIs =====
+  const kpiGrid = document.getElementById('kpi-grid');
+  const gmClass = grossMargin >= 0.45 ? 'good' : grossMargin >= 0.35 ? 'warning' : 'bad';
+  const paybackClass = cacPayback <= 6 ? 'good' : cacPayback <= 12 ? 'warning' : 'bad';
+  kpiGrid.innerHTML = `
+    <div class="kpi-card neutral">
+      <div class="kpi-label">${t('arpu')}</div>
+      <div class="kpi-value">${fmtD(arpu)}</div>
+      <div class="kpi-sub">${t('perMonth')}</div>
+    </div>
+    <div class="kpi-card ${gmClass}">
+      <div class="kpi-label">${t('gm')}</div>
+      <div class="kpi-value">${fmtP(grossMargin*100)}</div>
+      <div class="kpi-sub">benchmark 45-60%</div>
+    </div>
+    <div class="kpi-card neutral">
+      <div class="kpi-label">${t('contrib')}</div>
+      <div class="kpi-value">${fmtD(contribution)}</div>
+      <div class="kpi-sub">${t('perMonth')}</div>
+    </div>
+    <div class="kpi-card ${paybackClass}">
+      <div class="kpi-label">${t('payback')}</div>
+      <div class="kpi-value">${cacPayback.toFixed(1)}</div>
+      <div class="kpi-sub">${t('months')}</div>
+    </div>
+    <div class="kpi-card neutral">
+      <div class="kpi-label">${t('maxCac')}</div>
+      <div class="kpi-value">${fmtD(maxCAC)}</div>
+      <div class="kpi-sub">${t('atChurn')} ${(churn*100).toFixed(0)}%</div>
+    </div>
+  `;
+
+  // ===== RENDER MARGINS TABLE =====
+  const names = ['Launch', 'Scale', 'Dominate'];
+  const marginsTable = document.getElementById('margins-table');
+  let mHtml = `<thead><tr>
+    <th>${t('plan')}</th><th>${t('revenue')}</th><th>${t('cogs')}</th><th>${t('marginD')}</th><th>${t('marginP')}</th>
+  </tr></thead><tbody>`;
+
+  // Monthly header
+  mHtml += `<tr><td colspan="5" style="font-family:var(--sans);font-weight:700;color:var(--text);background:var(--surface2);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;text-align:left;padding:8px 10px;">${t('monthly')}</td></tr>`;
+  for (let i = 0; i < 3; i++) {
+    const pctClass = planData[i].marginPctM >= 45 ? 'positive' : planData[i].marginPctM >= 35 ? '' : 'negative';
+    mHtml += `<tr>
+      <td>${names[i]}</td>
+      <td>${fmtD(planData[i].revM)}</td>
+      <td>${fmtD(planData[i].cogsM)}</td>
+      <td>${fmtD(planData[i].marginM)}</td>
+      <td class="${pctClass}">${fmtP(planData[i].marginPctM)}</td>
+    </tr>`;
+  }
+
+  // Annual header
+  mHtml += `<tr><td colspan="5" style="font-family:var(--sans);font-weight:700;color:var(--text);background:var(--surface2);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;text-align:left;padding:8px 10px;">${t('annual')}</td></tr>`;
+  for (let i = 0; i < 3; i++) {
+    const pctClass = planData[i].marginPctA >= 45 ? 'positive' : planData[i].marginPctA >= 35 ? '' : 'negative';
+    mHtml += `<tr>
+      <td>${names[i]}</td>
+      <td>${fmtD(planData[i].revA)}</td>
+      <td>${fmtD(planData[i].cogsA)}</td>
+      <td>${fmtD(planData[i].marginA)}</td>
+      <td class="${pctClass}">${fmtP(planData[i].marginPctA)}</td>
+    </tr>`;
+  }
+  mHtml += '</tbody>';
+  marginsTable.innerHTML = mHtml;
+
+  // ===== GROWTH FORECAST =====
+  const growthCards = document.getElementById('growth-cards');
+  const beClass = beMonth && beMonth <= 6 ? 'highlight' : beMonth && beMonth <= 12 ? 'warning' : 'danger';
+  const mrr100Class = mrr100kMonth && mrr100kMonth <= 12 ? 'highlight' : mrr100kMonth && mrr100kMonth <= 18 ? 'warning' : 'danger';
+  growthCards.innerHTML = `
+    <div class="forecast-card ${beClass}">
+      <div class="forecast-label">${t('beMonth')}</div>
+      <div class="forecast-value ${beMonth && beMonth <= 6 ? 'green' : beMonth && beMonth <= 12 ? '' : 'red'}">${beMonth || 'N/A'}</div>
+      <div class="forecast-sub">${t('atChurn')} ${(churn*100).toFixed(0)}%</div>
+    </div>
+    <div class="forecast-card">
+      <div class="forecast-label">${t('beUsers')}</div>
+      <div class="forecast-value">${beUsers}</div>
+      <div class="forecast-sub">${fmtK(fixedCosts)} / ${fmtD(contribution)}</div>
+    </div>
+    <div class="forecast-card ${mrr100Class}">
+      <div class="forecast-label">${t('mrr100k')}</div>
+      <div class="forecast-value ${mrr100kMonth && mrr100kMonth <= 12 ? 'green' : 'red'}">${mrr100kMonth || '>60'}</div>
+      <div class="forecast-sub">${newUsers} ${lang === 'ru' ? 'новых/мес' : 'new/mo'}</div>
+    </div>
+    <div class="forecast-card">
+      <div class="forecast-label">${t('mktBudget')}</div>
+      <div class="forecast-value">${fmtK(mktBudget)}</div>
+      <div class="forecast-sub">${newUsers} x ${fmtD(maxCAC)}</div>
+    </div>
+  `;
+
+  // ===== COHORT TABLE =====
+  const cohortMonths = [3, 6, 12, 18, 24];
+  const cohortTable = document.getElementById('cohort-table');
+  let cHtml = `<thead><tr>
+    <th>${t('month')}</th><th>${t('active')}</th><th>${t('mrr')}</th><th>${t('arr')}</th>
+  </tr></thead><tbody>`;
+
+  const steadyUsers = newUsers / churn;
+  const steadyMRR = steadyUsers * arpu;
+
+  for (const m of cohortMonths) {
+    const activeUsers = Math.round(newUsers * (1 - Math.pow(1 - churn, m)) / churn);
+    const mrr = activeUsers * arpu;
+    const arrV = mrr * 12;
+    const isBE = beMonth && m >= beMonth;
+    cHtml += `<tr${isBE ? ' class="cohort-highlight"' : ''}>
+      <td>M${m}</td>
+      <td>${activeUsers.toLocaleString('en-US')}</td>
+      <td>${fmtKd(mrr)}</td>
+      <td>${fmtKd(arrV)}</td>
+    </tr>`;
+  }
+  // Steady state
+  cHtml += `<tr style="background:var(--surface2);">
+    <td style="color:var(--text);font-weight:700;">${t('steadyState')}</td>
+    <td style="font-weight:700;">~${Math.round(steadyUsers).toLocaleString('en-US')}</td>
+    <td style="font-weight:700;">${fmtKd(steadyMRR)}</td>
+    <td style="font-weight:700;">${fmtKd(steadyMRR*12)}</td>
+  </tr>`;
+  cHtml += '</tbody>';
+  cohortTable.innerHTML = cHtml;
+
+  // ===== LTV / CAC SENSITIVITY =====
+  const churnRates = [0.08, 0.10, 0.12, 0.15];
+  const ltvTable = document.getElementById('ltv-table');
+  let lHtml = `<thead><tr>
+    <th>${t('churnRate')}</th><th>${t('retention')}</th><th>${t('lifetime')}</th><th>${t('ltvGp')}</th><th>${t('maxCacCol')}</th>
+  </tr></thead><tbody>`;
+  let sumLTV = 0, sumCAC = 0;
+  for (const cr of churnRates) {
+    const lt = 1 / cr;
+    const retYr = Math.pow(1 - cr, 12) * 100;
+    const ltv = contribution * lt;
+    const mc = ltv / 3;
+    sumLTV += ltv;
+    sumCAC += mc;
+    const isCurrent = Math.abs(cr - churn) < 0.001;
+    lHtml += `<tr${isCurrent ? ' style="background:var(--green-bg);"' : ''}>
+      <td${isCurrent ? ' style="color:var(--green);"' : ''}>${(cr*100).toFixed(0)}%</td>
+      <td>${fmtP(retYr)}</td>
+      <td>${lt.toFixed(1)} ${t('months')}</td>
+      <td>${fmtD(ltv)}</td>
+      <td>${fmtD(mc)}</td>
+    </tr>`;
+  }
+  // Average row
+  lHtml += `<tr style="background:var(--surface2);font-weight:700;">
+    <td style="color:var(--text);font-weight:700;">${lang === 'ru' ? 'Среднее' : 'Average'}</td>
+    <td></td><td></td>
+    <td style="font-weight:700;">${fmtD(sumLTV/churnRates.length)}</td>
+    <td style="font-weight:700;">${fmtD(sumCAC/churnRates.length)}</td>
+  </tr>`;
+  lHtml += '</tbody>';
+  ltvTable.innerHTML = lHtml;
+
+  // ===== SENSITIVITY MATRICES =====
+  const sensContainer = document.getElementById('sens-container');
+
+  // Matrix 1: Churn x New Users => BE month
+  const sensChurns = [0.08, 0.10, 0.12, 0.15];
+  const sensNewUsers = [45, 60, 80, 100];
+  const cols1 = sensNewUsers.length + 1;
+
+  let s1 = `<div><div class="sens-label">${t('churnVsNew')}</div><div class="sens-matrix" style="grid-template-columns: repeat(${cols1}, 1fr);">`;
+  // Header row
+  s1 += `<div class="sens-cell header"></div>`;
+  for (const nu of sensNewUsers) s1 += `<div class="sens-cell header">${nu}</div>`;
+  // Data rows
+  for (const cr of sensChurns) {
+    s1 += `<div class="sens-cell row-header">${(cr*100).toFixed(0)}%</div>`;
+    for (const nu of sensNewUsers) {
+      // Recompute contribution with this churn (contribution itself doesn't change with churn in our model)
+      let be = null;
+      for (let n = 1; n <= 36; n++) {
+        const au = nu * (1 - Math.pow(1 - cr, n)) / cr;
+        if (au * contribution >= fixedCosts) { be = n; break; }
+      }
+      const val = be || '>36';
+      const cls = be && be <= 5 ? 'good' : be && be <= 8 ? 'ok' : be && be <= 12 ? 'warn' : 'bad';
+      const isCurrent = Math.abs(cr - churn) < 0.001 && nu === newUsers;
+      s1 += `<div class="sens-cell ${cls}${isCurrent ? ' current' : ''}">${val}</div>`;
+    }
+  }
+  s1 += '</div></div>';
+
+  // Matrix 2: Utilization x Annual % => GM%
+  const sensUtils = [0.70, 0.80, 0.85, 0.90, 1.00];
+  const sensAnnuals = [0.10, 0.20, 0.30, 0.40, 0.50];
+  const cols2 = sensAnnuals.length + 1;
+
+  let s2 = `<div><div class="sens-label">${t('utilVsBill')}</div><div class="sens-matrix" style="grid-template-columns: repeat(${cols2}, 1fr);">`;
+  s2 += `<div class="sens-cell header"></div>`;
+  for (const an of sensAnnuals) s2 += `<div class="sens-cell header">${(an*100).toFixed(0)}%</div>`;
+  for (const ut of sensUtils) {
+    s2 += `<div class="sens-cell row-header">${(ut*100).toFixed(0)}%</div>`;
+    for (const an of sensAnnuals) {
+      // Recompute GM with these params
+      let bCogs = 0;
+      let bRev = 0;
+      for (let i = 0; i < 3; i++) {
+        const cc = credits[i] * creditCost * ut;
+        const cm = cc + overheadMonthly[i];
+        const ca = cc + overheadMonthly[i] + overheadAnnualPremium[i];
+        const rm = prices[i];
+        const ra = prices[i] * (1 - discounts[i]);
+        bCogs += mix[i] * ((1-an) * cm + an * ca);
+        bRev += mix[i] * ((1-an) * rm + an * ra);
+      }
+      bRev += addonRev;
+      bCogs += addonRev * (1 - addonMarginPct);
+      const gm = (bRev - bCogs) / bRev * 100;
+      const cls = gm >= 50 ? 'good' : gm >= 45 ? 'ok' : gm >= 38 ? 'warn' : 'bad';
+      const isCurrent = Math.abs(ut - util) < 0.005 && Math.abs(an - billingAnnual) < 0.005;
+      s2 += `<div class="sens-cell ${cls}${isCurrent ? ' current' : ''}">${gm.toFixed(1)}%</div>`;
+    }
+  }
+  s2 += '</div></div>';
+
+  sensContainer.innerHTML = s1 + s2;
+
+  // ===== TOP-UP TABLE =====
+  const topupBundles = [
+    { credits: 5000, bonus: 0, price: 50 },
+    { credits: 10000, bonus: 500, price: 95 },
+    { credits: 25000, bonus: 2000, price: 225 },
+    { credits: 50000, bonus: 5000, price: 425 },
+    { credits: 100000, bonus: 10000, price: 800 },
+  ];
+  const topupTable = document.getElementById('topup-table');
+  const topupUtil = 0.95;
+  let tHtml = `<thead><tr>
+    <th>${t('bundle')}</th><th>${t('bonus')}</th><th>${t('total')}</th><th>${t('price')}</th><th>${t('per100')}</th><th>${t('margin')}</th>
+  </tr></thead><tbody>`;
+  for (const b of topupBundles) {
+    const totalCr = b.credits + b.bonus;
+    const per100 = b.price / totalCr * 100;
+    const cogs = totalCr * creditCost * topupUtil;
+    const margin = (b.price - cogs) / b.price * 100;
+    const mClass = margin >= 45 ? 'positive' : margin >= 35 ? '' : 'negative';
+    const note = b.credits === 100000 ? (lang === 'ru' ? ' (annual)' : ' (annual)') : '';
+    tHtml += `<tr>
+      <td>${(b.credits/1000).toFixed(0)}K${note}</td>
+      <td>+${b.bonus.toLocaleString('en-US')}</td>
+      <td>${totalCr.toLocaleString('en-US')}</td>
+      <td>${fmtD(b.price)}</td>
+      <td>$${per100.toFixed(2)}</td>
+      <td class="${mClass}">${fmtP(margin)}</td>
+    </tr>`;
+  }
+  tHtml += '</tbody>';
+  topupTable.innerHTML = tHtml;
+
+  // ===== P&L =====
+  const pnlTable = document.getElementById('pnl-table');
+  const pnlMonths = [3, 6, 12, 24];
+  let pHtml = `<thead><tr>
+    <th>${t('pnlPeriod')}</th><th>${t('pnlUsers')}</th><th>${t('pnlRevenue')}</th><th>${t('pnlCogs')}</th><th>${t('pnlGross')}</th><th>${t('pnlFixed')}</th><th>${t('pnlMkt')}</th><th>${t('pnlNet')}</th>
+  </tr></thead><tbody>`;
+  for (const m of pnlMonths) {
+    const au = Math.round(newUsers * (1 - Math.pow(1 - churn, m)) / churn);
+    const rev = au * arpu;
+    const cogs = au * blendedCogs;
+    const gross = rev - cogs;
+    const mkt = newUsers * maxCAC;
+    const net = gross - fixedCosts - mkt;
+    const netClass = net >= 0 ? 'positive' : 'negative';
+    const grossClass = gross >= fixedCosts ? 'positive' : '';
+    pHtml += `<tr>
+      <td>M${m}</td>
+      <td>${au.toLocaleString('en-US')}</td>
+      <td>${fmtKd(rev)}</td>
+      <td>${fmtKd(cogs)}</td>
+      <td class="${grossClass}">${fmtKd(gross)}</td>
+      <td>${fmtKd(fixedCosts)}</td>
+      <td>${fmtKd(mkt)}</td>
+      <td class="${netClass}">${net >= 0 ? '+' : ''}${fmtKd(net)}</td>
+    </tr>`;
+  }
+  // Steady state row
+  const ssRev = steadyUsers * arpu;
+  const ssCogs = steadyUsers * blendedCogs;
+  const ssGross = ssRev - ssCogs;
+  const ssMkt = newUsers * maxCAC;
+  const ssNet = ssGross - fixedCosts - ssMkt;
+  const ssNetClass = ssNet >= 0 ? 'positive' : 'negative';
+  pHtml += `<tr style="background:var(--surface2);">
+    <td style="color:var(--text);font-weight:700;">${t('steadyState')}</td>
+    <td style="font-weight:700;">${Math.round(steadyUsers).toLocaleString('en-US')}</td>
+    <td style="font-weight:700;">${fmtKd(ssRev)}</td>
+    <td style="font-weight:700;">${fmtKd(ssCogs)}</td>
+    <td style="font-weight:700;">${fmtKd(ssGross)}</td>
+    <td style="font-weight:700;">${fmtKd(fixedCosts)}</td>
+    <td style="font-weight:700;">${fmtKd(ssMkt)}</td>
+    <td class="${ssNetClass}" style="font-weight:700;">${ssNet >= 0 ? '+' : ''}${fmtKd(ssNet)}</td>
+  </tr>`;
+  pHtml += '</tbody>';
+  pnlTable.innerHTML = pHtml;
+
+  // ===== VERDICT =====
+  const verdictBlock = document.getElementById('verdict-block');
+  const checks = [];
+  let score = 0;
+
+  // GM check (0-25 points)
+  if (grossMargin >= 0.45) { checks.push({c:'g', t:t('vGmGood')}); score += 25; }
+  else if (grossMargin >= 0.35) { checks.push({c:'y', t:t('vGmWarn')}); score += 15; }
+  else { checks.push({c:'r', t:t('vGmBad')}); score += 0; }
+
+  // CAC payback (0-25 points)
+  if (cacPayback <= 4) { checks.push({c:'g', t:t('vPaybackGood')}); score += 25; }
+  else if (cacPayback <= 8) { checks.push({c:'y', t:t('vPaybackWarn')}); score += 15; }
+  else { checks.push({c:'r', t:t('vPaybackBad')}); score += 0; }
+
+  // Break-even (0-25 points)
+  if (beMonth && beMonth <= 6) { checks.push({c:'g', t:t('vBeGood')}); score += 25; }
+  else if (beMonth && beMonth <= 12) { checks.push({c:'y', t:t('vBeWarn')}); score += 15; }
+  else { checks.push({c:'r', t:t('vBeBad')}); score += 0; }
+
+  // $100K MRR (0-25 points)
+  if (mrr100kMonth && mrr100kMonth <= 12) { checks.push({c:'g', t:t('vMrr100Good')}); score += 25; }
+  else if (mrr100kMonth && mrr100kMonth <= 18) { checks.push({c:'y', t:t('vMrr100Warn')}); score += 15; }
+  else { checks.push({c:'r', t:t('vMrr100Bad')}); score += 0; }
+
+  const zone = score >= 75 ? 'green' : score >= 45 ? 'yellow' : 'red';
+  const zIcon = zone === 'green' ? '&#9679;' : zone === 'yellow' ? '&#9888;' : '&#10007;';
+  const zTitle = zone === 'green' ? t('verdictGreenTitle') : zone === 'yellow' ? t('verdictYellowTitle') : t('verdictRedTitle');
+  const scoreColor = zone === 'green' ? 'g' : zone === 'yellow' ? 'y' : 'r';
+
+  let vHtml = `<div class="verdict ${zone}">
+    <div class="verdict-header">
+      <div class="verdict-title-wrap">
+        <div class="verdict-section-title">${t('verdict')}</div>
+        <div class="verdict-title">${zTitle}</div>
+      </div>
+    </div>
+    <div class="verdict-items">`;
+  for (const ch of checks) {
+    vHtml += `<div class="verdict-item"><div class="verdict-dot ${ch.c}"></div><span>${ch.t}</span></div>`;
+  }
+  vHtml += `</div>
+    <div class="verdict-score">
+      <div class="verdict-score-bar"><div class="verdict-score-fill ${scoreColor}" style="width:${score}%"></div></div>
+      <div class="verdict-score-label" style="color:var(--${zone === 'green' ? 'green' : zone === 'yellow' ? 'amber' : 'red'})">${score}/100</div>
+    </div>
+  </div>`;
+  verdictBlock.innerHTML = vHtml;
+}
+
+// Init
+calc();
+</script>
+</body>
+</html>
